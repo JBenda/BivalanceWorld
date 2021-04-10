@@ -1,0 +1,5 @@
+*.o
+tkw
+.ccls
+.ccls-cache
+.depend
