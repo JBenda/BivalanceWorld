@@ -1,7 +1,7 @@
 .PHONY: all depend
 CXX := g++
 CXXFLAGS := -std=c++20 -g -Wall -Wextra -Wpedantic -O2 
-LDLIBS := -lncurses
+LDLIBS := -lncurses -lpthread
 
 SRCS := $(wildcard *.cpp)
 BINS := $(SRCS:%.cpp=%.o)
