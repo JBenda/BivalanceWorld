@@ -105,11 +105,15 @@ public:
 		m_predicates.size = _s;
 	}
 	bool hasSymbol(int i) const {
-		if (i > m_symbols.size()) { return false; }
+		if (static_cast<std::size_t>(i) > m_symbols.size()) { return false; }
 		return m_symbols[i];
 	}
+	
 	int nSymbols() const {
 		return m_symbols.count();
+	}
+	const auto& getSymols() const {
+		return m_symbols;
 	}
 
 	void setPosition(const vec2& _pos) {
