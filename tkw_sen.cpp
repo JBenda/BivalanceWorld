@@ -6,7 +6,7 @@
 #include <unistd.h>
  
 #include "peglib.h"
-#include "Expression.cpp"
+#include "Expression.hpp"
 #include "Printer.hpp"
 #include "Field.hpp"
 #include "Utils.hpp"
