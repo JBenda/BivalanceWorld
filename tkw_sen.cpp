@@ -1,13 +1,61 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <thread>
+#include <inotifytools/inotify.h>
+#include <unistd.h>
  
 #include "peglib.h"
 #include "Expression.cpp"
 #include "Printer.hpp"
 #include "Field.hpp"
+#include "Utils.hpp"
+
+int fd;
+int wd;
+void printOnChange(const char* _fileName,
+		std::vector<Object>* objs,
+		json* wld, VectorProvider* provider, ExpressionHandler* exs) {
+	fd = inotify_init();
+	if(fd < 0) {
+		std::cerr << "failed to setup inotify" << std::endl;
+		return;
+	}
+	wd = inotify_add_watch(fd, _fileName, IN_MODIFY | IN_IGNORED);
+	int length;
+	char buffer[BUF_LEN];
+	bool run = true;
+	while(run && (length = read(fd, buffer, BUF_LEN)) > 0) {
+		int i = 0; 
+		while(i < length) {
+			struct inotify_event *event = 
+				reinterpret_cast<inotify_event*>(buffer + i);
+			if (event->mask & IN_MODIFY) {
+				std::ifstream file(_fileName);
+				file >> *wld;
+				file.close();
+				objs->clear();
+				for(const auto& el : *wld) {
+					objs->push_back(Object(el));
+				}
+				*provider = std::move(VectorProvider(*objs));
+				exs->addGeneration();
+				print(*provider, *exs, exs->generation());
+			}
+			if (event->mask & IN_IGNORED) {
+				run = false;
+				i = length;
+			}
+			i += EVENT_SIZE + event->len;
+		}
+	}
+}
 
 int main(int argc, const char** argv) {
+	const char* filename = fetchFilename(argc, argv);
+	if (!filename) {
+		return -1;
+	}
 	ExpressionHandler exs;
 	std::ofstream log("/tmp/MyLog.tmp");
 	peg::parser parser(R"==(
@@ -55,7 +103,8 @@ int main(int argc, const char** argv) {
 				begin = fn + 1;
 			}
 		}
-		throw std::runtime_error("Unknown function: " + std::string(vs.token()));
+		/* throw std::runtime_error("Unknown function: " + std::string(vs.token())); */
+		return nullptr;
 	};
 	parser["args"] = [](const peg::SemanticValues& vs) -> syms_t {
 		syms_t syms;
@@ -71,8 +120,13 @@ int main(int argc, const char** argv) {
 		return syms;
 	};
 	parser["func"] = [](const peg::SemanticValues& vs) -> Expression* {
-		return std::any_cast<ExpressionFactory*>(vs[0])->create(
-				std::any_cast<syms_t>(vs[1]));
+		ExpressionFactory* fac = std::any_cast<ExpressionFactory*>(vs[0]);
+		if (fac) {
+			return fac->create(
+					std::any_cast<syms_t>(vs[1]));
+		} else {
+			return nullptr;
+		}
 	};
 	parser["bin"] = [](const peg::SemanticValues& vs)-> const BinFac* {
 		switch(vs.choice()) {
@@ -132,30 +186,23 @@ int main(int argc, const char** argv) {
 	};
 	parser.enable_packrat_parsing();	
 	json wld;
-	std::ifstream file("1_1-Wld.wld");
+	std::ifstream file(filename);
 	file >> wld;
+	file.close();
 	std::vector<Object> objs;
 	for(const auto& elm : wld) {
 		objs.push_back(Object(elm));
 	}
 	VectorProvider provider(objs);
 	std::string line;
+	std::thread updater(printOnChange,filename, &objs, &wld, &provider, &exs); 
+
 	while(std::getline(std::cin, line)) {
 		log << line << std::endl;
 		parser.parse(line);
-		/*while(*itr == '[') {
-			itr = reinterpret_cast<char*>(exs.parseCommand(reinterpret_cast<char_t *>(itr)));	
-		}*/
 		print(provider, exs, exs.generation());
-		/*if (*itr == 0) {
-			end = buffer;
-		} else {
-			char* i = buffer;
-			while(*itr) {
-				*i++ = *itr++;
-			}
-			end = i;
-		}
-		*end = 0;*/
 	}
+	inotify_rm_watch(fd, wd);
+	updater.join();
+	close(fd);
 }

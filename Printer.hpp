@@ -7,28 +7,28 @@
 class VectorProvider : public ObjectProvider {
 public:
 	VectorProvider(const std::vector<Object>& _objs)
-		: m_objs{_objs}
+		: m_objs{&_objs}
 	{ setupMapping(); }
 	const Object& getObject(int _sym) const override final {
 		if (m_mapping[_sym] < 0) {
 			throw ObjectProvider::SymbolNotDefined{};
 		}
-		return m_objs[m_mapping[_sym]];
+		return (*m_objs)[m_mapping[_sym]];
 	}
 private:
 	void setupMapping() {
 		for(std::size_t i = 0; i < m_mapping.size(); ++i) {
 			m_mapping[i] = -1;
 		}
-		for(size_t itr = 0; itr < m_objs.size(); ++itr) {
+		for(size_t itr = 0; itr < m_objs->size(); ++itr) {
 			for(std::size_t i = 0; i < Symbols.size(); ++i) {
-				if (m_mapping[i] < 0 && m_objs[itr].hasSymbol(i)) {
+				if (m_mapping[i] < 0 && (*m_objs)[itr].hasSymbol(i)) {
 					m_mapping[i] = static_cast<int>(itr);
 				}
 			}
 		}
 	}
-	const std::vector<Object>& m_objs;
+	const std::vector<Object>* m_objs;
 	std::array<int, Symbols.size()> m_mapping;
 };
 

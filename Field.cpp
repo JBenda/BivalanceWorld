@@ -176,6 +176,6 @@ Object::Object(const json& j) {
 		if(!match) {throw PredicateNotFound(pred); }
 	}
 	auto pos = fetchField(j, "Tags");
-	m_position = vec2(pos[0], pos[1]);
+	m_position = vec2(pos[0], DIM - 1 - static_cast<int>(pos[1]));
 }
 
