@@ -31,7 +31,15 @@ void drawField(const vec2& _pos, const Object* _obj) {
 		while(i < Symbols.size() && !_obj->hasSymbol(i)){++i;}
 		for(int y = 0; y < FORM_HEIGHT; ++y) {
 			for(int x = 0; x < FORM_WIDTH; ++x) {
-				char c = ' ';
+				int c = ' ';
+				if (y == FORM_HEIGHT / 2 && x == FORM_WIDTH / 2) {
+					switch(_obj->getSize()) {
+						case Size::SMALL: c = 'S' | A_BOLD; break;
+						case Size::MEDIUM: c = 'M' | A_BOLD; break;
+						case Size::LARGE: c = 'L' | A_BOLD; break;
+						default: c = ' ';
+					}
+				}
 				if (y == FORM_HEIGHT - 1) {
 					int p = x - start;
 					if (i < Symbols.size() && p >= 0) {

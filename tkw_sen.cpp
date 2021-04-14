@@ -64,10 +64,10 @@ int main(int argc, const char** argv) {
 		expr <- ("[" cmd "]")+
 		cmd <- "c" / "a;" number ";" number ";" "\"" term^invTerm %whitespace "\"" ","?
 		number <- [0-9]+
-		term <- "¬" %whitespace bool  / bool "∧" term / bool %whitespace "∨" term / "(" term %whitespace ")" / bool
+		term <- "¬" %whitespace term  / bool "∧" term / bool %whitespace "∨" term / "(" term %whitespace ")" / bool
 		bool <- sym %whitespace bin sym /   func
 		sym  <- [a-f]
-		bin  <- "=" / "≠"
+		bin  <- "=" | "≠" | "!="
 		func <- fnName "(" args %whitespace ")"
 		fnName <- [A-Z][A-Za-z]+
 		args <- sym ( %whitespace "," sym )*
@@ -129,9 +129,10 @@ int main(int argc, const char** argv) {
 		}
 	};
 	parser["bin"] = [](const peg::SemanticValues& vs)-> const BinFac* {
-		switch(vs.choice()) {
-			case 0: return ExEQ::fac();
-			default: return ExNEQ::fac();
+		if (vs.token() == "=") {
+			return ExEQ::fac();
+		} else {
+			return ExNEQ::fac();
 		}
 	};
 	parser["term"] = [](const peg::SemanticValues& vs) -> Expression* {

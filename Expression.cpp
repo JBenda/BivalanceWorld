@@ -235,8 +235,8 @@ bool Medium(const Object** objs) {
 using ExMFac = ExpressionFactoryInstance<1, Medium>;
 
 bool Adjoins(const Object** objs) {
-	int dx = objs[0]->getPosition().x - objs[0]->getPosition().x;
-	int dy = objs[0]->getPosition().y - objs[0]->getPosition().y;
+	int dx = objs[0]->getPosition().x - objs[1]->getPosition().x;
+	int dy = objs[0]->getPosition().y - objs[1]->getPosition().y;
 	return (abs(dx) + abs(dy)) == 1;
 }
 using ExAFac = ExpressionFactoryInstance<2, Adjoins>;
@@ -295,7 +295,7 @@ bool SameSize(const Object** objs) {
 using ExSameSizeFac = ExpressionFactoryInstance<2, SameSize>;
 
 bool FrontOf(const Object** objs) {
-	return objs[0]->getPosition().y < objs[1]->getPosition().y;
+	return objs[0]->getPosition().y > objs[1]->getPosition().y;
 }
 using ExFOFac = ExpressionFactoryInstance<2, FrontOf>;
 
