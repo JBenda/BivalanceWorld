@@ -29,8 +29,19 @@ struct vec2 {
 	}
 	int x = 0;
 	int y = 0;
-	bool operator==(const vec2& _o) {
+	bool operator==(const vec2& _o) const {
 		return x == _o.x && y == _o.y;
+	}
+	vec2 operator+(const vec2& _o) const {
+		return vec2{_o.x + x, _o.y + y};
+	}
+	vec2 operator-(const vec2& _o) const {
+		return vec2{x - _o.x, y - _o.y};
+	}
+	vec2& operator+=(const vec2& _o) {
+		x += _o.x;
+		y += _o.y;
+		return *this;
 	}
 };
 
@@ -107,6 +118,12 @@ public:
 	bool hasSymbol(int i) const {
 		if (static_cast<std::size_t>(i) > m_symbols.size()) { return false; }
 		return m_symbols[i];
+	}
+	Size getSize() const {
+		return m_predicates.size.value();
+	}
+	Form getFormType() const {
+		return m_predicates.form.value();
 	}
 	
 	int nSymbols() const {

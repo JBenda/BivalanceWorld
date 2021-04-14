@@ -1,23 +1,26 @@
 .PHONY: all depend
 CXX := g++
-CXXFLAGS := -std=c++20 -g -Wall -Wextra -Wpedantic -O2 
+CXXFLAGS := -std=c++20 -g -Wall -Wextra -Wpedantic -Og 
 LDLIBS := -lncurses -lpthread
 
-SRCS := $(wildcard *.cpp)
+SRCS := $(filter-out tkw.cpp tkw_sen.cpp Expression.cpp, $(wildcard *.cpp))
 BINS := $(SRCS:%.cpp=%.o)
 
-all: tkw
+all: tkw tkw_sen
 
 depend: .depend
-.depend: $(SRCS)
+.depend: $(SRCS) tkw.cpp tkw_sen.cpp
 	$(CXX) $(CXXFLAGS) -MM $^ > "$@"
 include .depend
 
 %.o: %.cpp 
 	${CXX} ${CXXFLAGS} $< -c -o $@
 
-tkw: depend $(BINS)
-	$(CXX)  ${LDLIBS} $(BINS) -o $@
+tkw: depend $(BINS) tkw.o
+	$(CXX) ${LDLIBS} tkw.o $(BINS) -o $@
+
+tkw_sen: depend $(BINS) tkw_sen.o
+	$(CXX) ${LDLIBS} tkw_sen.o $(BINS) -o $@
 
 
 clean:
