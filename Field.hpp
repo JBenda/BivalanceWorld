@@ -15,6 +15,8 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
+constexpr int DIM = 8;
+
 extern int ColorId;
 
 struct vec2 {

@@ -13,10 +13,9 @@
 #include <ncurses.h>
 
 #include "Field.hpp"
+#include "Utils.hpp"
 
 std::vector<std::string> errors;
-constexpr int EVENT_SIZE = sizeof(inotify_event);
-constexpr int BUF_LEN = 1024 * (EVENT_SIZE + 16);
 
 int black;
 int white;
@@ -128,7 +127,7 @@ void loadAndDraw(const char* _fileName) {
 			++count;
 		}
 	}
-	drawGrid({8,8}, objs);
+	drawGrid({DIM,DIM}, objs);
 	refresh();
 }
 int fd; ///< inotify_file descriptor
@@ -161,22 +160,10 @@ void drawOnChange(const char* _fileName) {
 
 int main(int argc, const char** argv)
 {
-	if (argc != 2) {
-		std::cerr << "usage: tkw <wld-filename>.wld\n";
-		return -1;
-	}
-	const char* filename = argv[1];
-	if (!std::filesystem::exists(filename)) {
-		std::cerr << filename << ": file not exists!\n";
-		return -1;
-	}
-	if (
-			std::filesystem::path(filename).extension()
-			!= ".wld") {
-		std::cerr << filename
-			<< ": file type won't match (!= .wld)\n";
-		return -1;
-	}
+    const char* filename = fetchFilename(argc, argv);
+    if (!filename) {
+        return -1;
+    }
 	int ch;
 	initscr();
 	raw();
@@ -190,8 +177,8 @@ int main(int argc, const char** argv)
 	init_pair(ColorId++, COLOR_WHITE, COLOR_BLACK);
 	initForm();
 	
-	loadAndDraw("../KW15/1-4-Wld.wld");
-	std::thread updater(drawOnChange, "../KW15/1-4-Wld.wld");
+	loadAndDraw(filename);
+	std::thread updater(drawOnChange, filename);
 
 	do { ch = getch(); } while(ch != 'q');
 	inotify_rm_watch(fd, wd);

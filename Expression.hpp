@@ -45,6 +45,7 @@ public:
 	auto begin() { return m_lines.begin(); }
 	auto end() { return m_lines.end(); }
 	int generation() const { return m_generation; }
+	void addGeneration() { ++m_generation; }
     void clear();
     void add(int bufnr, int line, ::Expression* exp);
 private:
