@@ -64,8 +64,8 @@ int main(int argc, const char** argv) {
 		expr <- ("[" cmd "]")+
 		cmd <- "c" / "a;" number ";" number ";" "\"" term^invTerm %whitespace "\"" ","?
 		number <- [0-9]+
-		term <- "¬" %whitespace term  / bool "∧" term / bool %whitespace "∨" term / "(" term %whitespace ")" / bool
-		bool <- sym %whitespace bin sym /   func
+		term <- bool "∧" term / bool %whitespace "∨" term / "(" term %whitespace ")" / "¬" %whitespace term  /  bool
+		bool <- "¬" %whitespace bool / sym %whitespace bin sym /   func
 		sym  <- [a-f]
 		bin  <- "=" | "≠" | "!="
 		func <- fnName "(" args %whitespace ")"
@@ -138,15 +138,17 @@ int main(int argc, const char** argv) {
 	parser["term"] = [](const peg::SemanticValues& vs) -> Expression* {
 		switch(vs.choice()) {
 			case 0:
-				return new ExNot(std::any_cast<Expression*>(vs[0]));
-			case 1:
 				return new ExAnd(
 						std::any_cast<Expression*>(vs[0]),
 						std::any_cast<Expression*>(vs[1]));
-			case 2:
+			case 1:
 				return new ExOr(
 						std::any_cast<Expression*>(vs[0]),
 						std::any_cast<Expression*>(vs[1]));
+			case 2:
+				return std::any_cast<Expression*>(vs[0]);
+			case 3:
+				return new ExNot(std::any_cast<Expression*>(vs[0]));
 			default:
 				return std::any_cast<Expression*>(vs[0]);
 		}
@@ -154,6 +156,8 @@ int main(int argc, const char** argv) {
 	parser["bool"] = [](const peg::SemanticValues& vs) -> Expression* {
 		switch(vs.choice()) {
 			case 0:
+				return new ExNot( std::any_cast<Expression*>(vs[0]));
+			case 1:
 				return std::any_cast<const BinFac*>(vs[1])->create(
 						std::any_cast<int>(vs[0]),
 						std::any_cast<int>(vs[2])

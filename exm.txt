@@ -1,1 +1,1 @@
-[c][a;1;2;  "a != b",][a;1;3;  "a=b",][a;1;4;  "Medium(a)",][a;1;5;  "Dodec(b)",][a;1;6;  "rontOf(a,b)",][a;1;7;  "Larger(a,b)",][a;1;8;  "Between(a,b,c)",][a;1;9;  "a  = d",][a;1;10;  "Smaller(a,c)",][a;1;11;  "LeftOf(b,c)"]
+[c][a;1;2;  "¬(FrontOf(a,c) ∧ Small(b))"]

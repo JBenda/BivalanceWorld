@@ -67,6 +67,7 @@ extern std::array<Function, 18> FunctionNames;
 struct ExNot : public Expression{
     ExNot(Expression* exp) : m_exp{exp} { }
     bool eval(const ObjectProvider& objs) const override final {
+		std::cerr << "m_exp->eval: " << m_exp->eval(objs) << std::endl;
         return !m_exp->eval(objs);
     }
     ~ExNot() { delete m_exp; }
