@@ -7,7 +7,7 @@
 #include <array>
 #include "Field.hpp"
 
-using syms_t = std::array<int, 4>;
+using syms_t = std::array<int, 4>; ///< \attention max support of functions with 4 arguments
 using char_t = char8_t;
 using string = std::u8string;
 

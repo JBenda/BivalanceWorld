@@ -96,6 +96,7 @@ int main(int argc, const char** argv) {
 	parser["fnName"] = [](const peg::SemanticValues& vs) -> ExpressionFactory*{
 		auto begin = FunctionNames.begin();
 		auto end = FunctionNames.end();
+		// binary search on function names
 		while(begin != end) {
 			auto fn = begin + (end - begin)/2;
 			int cmp = matchC(vs.token(), fn->name);
