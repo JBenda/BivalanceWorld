@@ -60,17 +60,21 @@ int main(int argc, const char** argv) {
 	std::ofstream log("/tmp/MyLog.tmp");
 	peg::parser parser(R"==(
         # grammar Sen
-
-		expr <- ("[" cmd "]")+
-		cmd <- "c" / "a;" number ";" number ";" "\"" term^invTerm %whitespace "\"" ","?
+		expr <- ('[' cmd ']')+
+		cmd <- 'c' / 'a;' number ';' number ';' '"' term^invTerm %whitespace '"' ','?
 		number <- [0-9]+
-		term <- bool "∧" term / bool %whitespace "∨" term / "(" term %whitespace ")" / "¬" %whitespace term  /  bool
-		bool <- "¬" %whitespace bool / sym %whitespace bin sym /   func
+		term <- gdw
+		gdw <- implication '<->' gdw / implication
+		implication <- and '->' implication / and
+		and <- or '∧' and / or
+		or <- not '∨' or / not
+		not <- '¬' not / bool
+		bool <- '(' term ')' / sym %whitespace bin sym /  func
 		sym  <- [a-f]
-		bin  <- "=" | "≠" | "!="
-		func <- fnName "(" args %whitespace ")"
-		fnName <- [A-Z][A-Za-z]+
-		args <- sym ( %whitespace "," sym )*
+		bin <- '=' | '!='
+		func <- fnName '(' args %whitespace ')'
+		fnName <- <[A-Z][A-Za-z]+>
+		args <- sym ( %whitespace ',' sym )*
 		~%whitespace  <-  [ \t\r\n]*
 
 		invTerm <- [^"]*
@@ -135,19 +139,53 @@ int main(int argc, const char** argv) {
 			return ExNEQ::fac();
 		}
 	};
-	parser["term"] = [](const peg::SemanticValues& vs) -> Expression* {
+	parser["term"] = [](const peg::SemanticValues& vs) -> Expression*{
+		return std::any_cast<Expression*>(vs[0]);
+	};
+	parser["gdw"] = [](const peg::SemanticValues& vs) -> Expression* {
+		switch(vs.choice()) {
+			case 0:
+				return new ExGdw(
+						std::any_cast<Expression*>(vs[0]),
+						std::any_cast<Expression*>(vs[1]));
+			default:
+				return std::any_cast<Expression*>(vs[0]);
+		}
+	};
+	parser["implication"] = [](const peg::SemanticValues& vs) -> Expression* {
+		switch(vs.choice()) {
+			case 0:
+				return new ExImp(
+						std::any_cast<Expression*>(vs[0]),
+						std::any_cast<Expression*>(vs[1]));
+			default:
+				return std::any_cast<Expression*>(vs[0]);
+		}
+
+	};
+	parser["and"] = [](const peg::SemanticValues& vs) -> Expression* {
 		switch(vs.choice()) {
 			case 0:
 				return new ExAnd(
 						std::any_cast<Expression*>(vs[0]),
 						std::any_cast<Expression*>(vs[1]));
-			case 1:
+			default:
+				return std::any_cast<Expression*>(vs[0]);
+		}
+	};
+	parser["or"] = [](const peg::SemanticValues& vs) -> Expression* {
+		switch(vs.choice()) {
+			case 0:
 				return new ExOr(
 						std::any_cast<Expression*>(vs[0]),
 						std::any_cast<Expression*>(vs[1]));
-			case 2:
+			default:
 				return std::any_cast<Expression*>(vs[0]);
-			case 3:
+		}
+	};
+	parser["not"] = [](const peg::SemanticValues& vs) -> Expression* {
+		switch(vs.choice()) {
+			case 0:
 				return new ExNot(std::any_cast<Expression*>(vs[0]));
 			default:
 				return std::any_cast<Expression*>(vs[0]);
@@ -156,16 +194,18 @@ int main(int argc, const char** argv) {
 	parser["bool"] = [](const peg::SemanticValues& vs) -> Expression* {
 		switch(vs.choice()) {
 			case 0:
-				return new ExNot( std::any_cast<Expression*>(vs[0]));
+				return std::any_cast<Expression*>(vs[0]);
 			case 1:
-				return std::any_cast<const BinFac*>(vs[1])->create(
-						std::any_cast<int>(vs[0]),
-						std::any_cast<int>(vs[2])
-					);
+				return std::any_cast<const BinFac*>(vs[1])
+					->create(
+							std::any_cast<int>(vs[0]),
+							std::any_cast<int>(vs[2]));
 			default:
 				return std::any_cast<Expression*>(vs[0]);
+					
 		}
 	};
+
 	parser["number"] = [](const peg::SemanticValues& vs) -> int {
 		return vs.token_to_number<int>();
 	};

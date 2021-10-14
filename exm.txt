@@ -1,1 +1,0 @@
-[c][a;1;2;  "¬(FrontOf(a,c) ∧ Small(b))"]

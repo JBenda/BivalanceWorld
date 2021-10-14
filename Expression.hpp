@@ -95,6 +95,26 @@ private:
     Expression* m_exps[2];
 };
 
+struct ExImp : public Expression {
+	ExImp(Expression* lh, Expression* rh) : m_exps{lh, rh} {}
+	bool eval(const ObjectProvider& objs) const override final {
+		return !m_exps[0]->eval(objs) || m_exps[1]->eval(objs);
+	}
+	~ExImp() { delete m_exps[0]; delete m_exps[1]; }
+private:
+	Expression* m_exps[2];
+};
+
+struct ExGdw : public Expression {
+	ExGdw(Expression* lh, Expression* rh) : m_exps{lh, rh} {}
+	bool eval(const ObjectProvider& objs) const override final {
+		return m_exps[0]->eval(objs) == m_exps[1]->eval(objs);
+	}
+	~ExGdw() {delete m_exps[0]; delete m_exps[1];}
+private:
+	Expression* m_exps[2];
+};
+
 
 struct BinFac  {
     virtual Expression* create(int lh, int rh) const = 0;
