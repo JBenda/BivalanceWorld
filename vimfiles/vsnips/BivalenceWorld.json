@@ -1,0 +1,27 @@
+{
+  "Class": {
+    "prefix": ["class"],
+    "body": [
+      "/**",
+      " * @author ${VIM:\\$USER}",
+      " */",
+      "class $1 ${2:extends ${3:Parent} }{",
+      "\tconstructor() {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "Class definition template."
+  },
+  "Object": {
+    "prefix": ["obj"],
+    "body": [
+      "{",
+      "\t\"Consts\": [$1],",
+      "\t\"Predicates\": [\"${2|Cube,Tet,Dodec|}\", \"${3|Small,Medium,Large|}\"],",
+      "\t\"Tags\": [${4:0,0}]",
+      "},"
+    ],
+    "description": "BivalenceWorld obj"
+  }
+}
